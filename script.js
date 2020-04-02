@@ -3,12 +3,42 @@ const seats = document.querySelectorAll(".row .seat:not(.occupied)");
 const count = document.getElementById("count");
 const total = document.getElementById("total");
 const movieSelect = document.getElementById("movie");
+
+//get data from localStorage and populate UI
+const populateUI = () => {
+  //convert back to array
+  const selectedSeats = JSON.parse(localStorage.getItem("selectedSeats"));
+  if (selectedSeats !== null && selectedSeats.length > 0) {
+    seats.forEach((seat, index) => {
+      if (selectedSeats.indexOf(index) > -1) {
+        seat.classList.add("selected");
+      }
+    });
+  }
+
+  const selectedMovieIndex = localStorage.getItem("selectedMovieIndex");
+  if (selectedMovieIndex !== null) {
+    movieSelect.selectedIndex = selectedMovieIndex;
+  }
+};
+populateUI();
+
 //+ converts to number
 let ticketPrice = +movieSelect.value;
 
+//save selected movie index and price
+const setMovieData = (movieIndex, moviePrice) => {
+  localStorage.setItem("selectedMovieIndex", movieIndex);
+  localStorage.setItem("selectedMoviePrice", moviePrice);
+};
 const updateSelectedCount = () => {
   //store in node list
   const selectedSeats = document.querySelectorAll(".row .seat.selected");
+
+  //copy nodelist in array, map to get index
+  const seatsIndex = [...selectedSeats].map(seat => [...seats].indexOf(seat));
+
+  localStorage.setItem("selectedSeats", JSON.stringify(seatsIndex));
 
   //get length of nodelist with above classes
   const selectedSeatsCount = selectedSeats.length;
@@ -16,9 +46,11 @@ const updateSelectedCount = () => {
   count.innerText = selectedSeatsCount;
   total.innerText = selectedSeatsCount * ticketPrice;
 };
+
 //movie select event
 movieSelect.addEventListener("change", e => {
   ticketPrice = +e.target.value;
+  setMovieData(e.target.selectedIndex, e.target.value);
   updateSelectedCount();
 });
 //seat click event
@@ -32,3 +64,5 @@ container.addEventListener("click", e => {
     updateSelectedCount();
   }
 });
+
+updateSelectedCount();
